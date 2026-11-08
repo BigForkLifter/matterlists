@@ -1,0 +1,1230 @@
+/*
+ * MatterLists styles. Colors come from Mattermost's theme variables so every theme,
+ * dark ones included, works. Layout is phone-first: wider screens only relax it.
+ */
+
+.ml-root {
+    --ml-fg: rgb(var(--center-channel-color-rgb));
+    --ml-muted: rgba(var(--center-channel-color-rgb), 0.64);
+    --ml-border: rgba(var(--center-channel-color-rgb), 0.16);
+    --ml-hover: rgba(var(--center-channel-color-rgb), 0.08);
+    --ml-bg: var(--center-channel-bg);
+    --ml-accent: var(--button-bg);
+    --ml-accent-fg: var(--button-color);
+    --ml-danger: var(--error-text);
+    --ml-tap: 44px;
+
+    color: var(--ml-fg);
+    font-size: 14px;
+    line-height: 20px;
+}
+
+.ml-root *,
+.ml-root *::before,
+.ml-root *::after {
+    box-sizing: border-box;
+}
+
+.ml-rhs {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    background: var(--ml-bg);
+}
+
+/* Controls */
+
+.ml-root button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+}
+
+.ml-root button:disabled {
+    cursor: default;
+    opacity: 0.48;
+}
+
+.ml-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: var(--ml-tap);
+    padding: 0 16px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.ml-btn--primary {
+    background: var(--ml-accent);
+    color: var(--ml-accent-fg) !important;
+}
+
+.ml-btn--ghost {
+    background: rgba(var(--button-bg-rgb), 0.08);
+    color: var(--ml-accent) !important;
+}
+
+.ml-btn--danger {
+    background: var(--ml-danger);
+    color: #fff !important;
+}
+
+.ml-btn--danger-ghost {
+    color: var(--ml-danger) !important;
+}
+
+.ml-icon-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--ml-tap);
+    height: var(--ml-tap);
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ml-muted) !important;
+    font-size: 18px;
+}
+
+.ml-icon-btn--small {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+}
+
+@media (hover: hover) {
+    .ml-icon-btn:hover:not(:disabled),
+    .ml-option:hover,
+    .ml-index__row:hover {
+        background: var(--ml-hover);
+    }
+}
+
+/* 16px stops iOS Safari zooming in when an input is focused. */
+.ml-input {
+    width: 100%;
+    min-width: 0;
+    min-height: var(--ml-tap);
+    padding: 10px 12px;
+    border: 1px solid var(--ml-border);
+    border-radius: 6px;
+    background: var(--ml-bg);
+    color: var(--ml-fg);
+    font: inherit;
+    font-size: 16px;
+}
+
+.ml-input:focus {
+    border-color: var(--ml-accent);
+    outline: none;
+    box-shadow: 0 0 0 1px var(--ml-accent);
+}
+
+.ml-input--area {
+    resize: vertical;
+}
+
+/* Grows with its text (see useAutoGrow) until half the screen, then scrolls. */
+.ml-input--grow {
+    max-height: 50vh;
+    resize: none;
+}
+
+.ml-input--title {
+    overflow: hidden;
+    border-color: transparent;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
+    resize: none;
+}
+
+.ml-input--search {
+    flex: 1 1 120px;
+}
+
+.ml-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.ml-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.ml-muted {
+    color: var(--ml-muted);
+}
+
+.ml-nowrap {
+    white-space: nowrap;
+}
+
+.ml-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 16px;
+    color: var(--ml-muted);
+    text-align: center;
+}
+
+.ml-hint {
+    padding: 8px 16px;
+    color: var(--ml-muted);
+}
+
+.ml-error {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 8px;
+    padding: 4px 4px 4px 12px;
+    border-radius: 6px;
+    background: rgba(var(--error-text-color-rgb), 0.12);
+    color: var(--ml-danger);
+}
+
+/* Chips */
+
+.ml-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 16px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ml-chip--gray { background: rgba(128, 128, 128, 0.2); }
+.ml-chip--blue { background: rgba(28, 88, 217, 0.18); }
+.ml-chip--green { background: rgba(6, 214, 160, 0.22); }
+.ml-chip--yellow { background: rgba(255, 188, 31, 0.28); }
+.ml-chip--orange { background: rgba(247, 131, 52, 0.24); }
+.ml-chip--red { background: rgba(210, 75, 78, 0.22); }
+.ml-chip--purple { background: rgba(124, 77, 224, 0.2); }
+.ml-chip--pink { background: rgba(226, 84, 163, 0.2); }
+
+.ml-chip--plain,
+.ml-chip--person {
+    padding-left: 0;
+    color: var(--ml-muted);
+    font-weight: 400;
+}
+
+.ml-card-text {
+    display: -webkit-box;
+    flex-basis: 100%;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    color: var(--ml-muted);
+    font-size: 13px;
+    line-height: 18px;
+    overflow-wrap: anywhere;
+    white-space: pre-line;
+}
+
+.ml-chip--link {
+    color: var(--link-color);
+}
+
+.ml-chip--overdue {
+    color: var(--ml-danger);
+}
+
+.ml-chip--empty {
+    border: 1px dashed var(--ml-border);
+    color: var(--ml-muted);
+    font-weight: 400;
+}
+
+.ml-avatar {
+    flex: none;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Full page: a panel over the channel (list_page.tsx), drawn into Mattermost's
+   ".main-wrapper" grid, and the link route's "Opening…" screen. The list view keeps a
+   readable width while the board uses all of it. */
+.ml-page {
+    /* The grid is "lhs center rhs", with side columns only as wide as their content; on
+       phones it has one column. Sit in the first row, over the channel's own panes. */
+    position: relative;
+    z-index: 9;
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    background: var(--ml-bg);
+}
+
+/* On desktop the right-hand sidebar (a thread, or Lists opened from the app bar) floats
+   over a placeholder in the "rhs" column. Leave that column to it so it sits beside the
+   page. Mattermost switches to its phone layout at 768px. */
+/* On phones Mattermost's channel header (.navbar, 50px, z-index 1030) floats over the
+   top of the channel; start the panel below it. A thread (z-index 13) opens over it. */
+@media (max-width: 768px) {
+    .ml-page--panel {
+        padding-top: 50px;
+    }
+}
+
+@media (min-width: 769px) {
+    .ml-page {
+        /* Above the channel sidebar (#SidebarContainer, z-index 16). On phones that
+           sidebar slides in over the page when opened, so it stays above there. */
+        z-index: 17;
+        grid-column: 1 / 3;
+    }
+}
+
+.ml-list--page {
+    --ml-page-pad: max(12px, calc((100% - 880px) / 2));
+}
+
+.ml-list--page .ml-list__header,
+.ml-list--page .ml-toolbar,
+.ml-list--page .ml-group-by,
+.ml-list--page .ml-hint,
+.ml-list--page .ml-cards,
+.ml-list--page .ml-quick-add {
+    padding-right: var(--ml-page-pad);
+    padding-left: var(--ml-page-pad);
+}
+
+/* Centre the board's columns when they fit. Auto margins (unlike justify-content:
+   center) shrink to zero when the columns overflow, so the first one isn't cut off. */
+.ml-list--page .ml-board > :first-child {
+    margin-left: auto;
+}
+
+.ml-list--page .ml-board > :last-child {
+    margin-right: auto;
+}
+
+.ml-list--page .ml-list__header {
+    padding-top: 12px;
+    padding-bottom: 8px;
+}
+
+.ml-list--page .ml-list__title {
+    font-size: 20px;
+    line-height: 28px;
+}
+
+.ml-list__heading {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+.ml-list__channel {
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--link-color) !important;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ml-btn__note {
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+/* Channel list index */
+
+/* The sidebar's channel view scrolls on its own; the sidebar itself doesn't scroll. */
+.ml-index {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.ml-index__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px 16px;
+}
+
+.ml-index__header h2,
+.ml-list__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ml-new-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 16px 16px;
+}
+
+.ml-index__lists {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.ml-index__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    min-height: 56px;
+    padding: 0 16px;
+    border: 0;
+    border-top: 1px solid var(--ml-border);
+    background: transparent;
+    text-align: left;
+}
+
+.ml-index__name {
+    overflow: hidden;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* One list */
+
+.ml-list {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.ml-list__header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+}
+
+.ml-list__header .ml-icon-btn:first-child {
+    color: var(--ml-fg) !important;
+    font-size: 28px;
+}
+
+.ml-list__title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ml-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px 8px;
+}
+
+.ml-segmented {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 8px;
+    background: var(--ml-hover);
+}
+
+.ml-segmented button {
+    min-height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--ml-muted);
+    font-weight: 600;
+}
+
+.ml-segmented button.ml-segmented--on {
+    background: var(--ml-bg);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.16);
+    color: var(--ml-fg);
+}
+
+.ml-segmented--wide {
+    display: flex;
+}
+
+.ml-segmented--wide button {
+    flex: 1;
+}
+
+.ml-center {
+    text-align: center;
+}
+
+.ml-filter {
+    max-width: 160px;
+    overflow: hidden;
+    min-height: 40px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 0 14px;
+    border: 1px solid var(--ml-border);
+    border-radius: 20px;
+    background: transparent;
+    font-weight: 600;
+}
+
+.ml-filter--on {
+    border-color: var(--ml-accent);
+    background: rgba(var(--button-bg-rgb), 0.12);
+    color: var(--ml-accent) !important;
+}
+
+.ml-group-by {
+    padding: 0 16px 8px;
+    color: var(--ml-muted);
+}
+
+.ml-group-by select {
+    min-height: 36px;
+    border: 1px solid var(--ml-border);
+    border-radius: 6px;
+    background: var(--ml-bg);
+    color: var(--ml-fg);
+    font-size: 16px;
+}
+
+.ml-list__content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Cards */
+
+.ml-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 0;
+    padding: 4px 12px 12px;
+    list-style: none;
+}
+
+.ml-card {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    border: 1px solid var(--ml-border);
+    border-radius: 8px;
+    background: var(--ml-bg);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.ml-card:active {
+    background: var(--ml-hover);
+}
+
+.ml-card:focus-visible {
+    outline: 2px solid var(--ml-accent);
+}
+
+.ml-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.ml-card__title {
+    min-width: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.ml-card--done .ml-card__title {
+    color: var(--ml-muted);
+    text-decoration: line-through;
+}
+
+/* The status button keeps a full-size tap target around a small chip. */
+.ml-card__status {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    min-height: 32px;
+    margin: -6px -6px -6px 0;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+}
+
+.ml-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 10px;
+}
+
+.ml-card__meta:empty {
+    display: none;
+}
+
+/* Board: one column per screen on phones, scrolling sideways with snap. */
+
+.ml-board {
+    display: flex;
+    gap: 12px;
+    height: 100%;
+    padding: 4px 12px 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+}
+
+.ml-board__col {
+    display: flex;
+    flex: 0 0 min(86%, 300px);
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+    padding: 8px;
+    border-radius: 8px;
+    background: var(--ml-hover);
+    scroll-snap-align: start;
+}
+
+.ml-board__col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+}
+
+.ml-board__items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+}
+
+/* Quick add */
+
+.ml-quick-add {
+    display: flex;
+    gap: 8px;
+    padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--ml-border);
+    background: var(--ml-bg);
+}
+
+.ml-quick-add--compact {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+/* Sheets: full screen on phones, a dialog on wider screens. */
+
+.ml-backdrop {
+    position: fixed;
+    z-index: 1100;
+    inset: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.48);
+}
+
+.ml-sheet {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: var(--ml-bg);
+}
+
+.ml-sheet__header {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 4px;
+    padding: 4px;
+    padding-top: calc(4px + env(safe-area-inset-top));
+    border-bottom: 1px solid var(--ml-border);
+}
+
+.ml-sheet__title {
+    flex: 1;
+    min-width: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.ml-sheet__title--padded {
+    padding-left: 12px;
+}
+
+.ml-sheet__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 8px;
+}
+
+.ml-save-status {
+    color: var(--ml-muted);
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.ml-sheet__body {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px 16px calc(16px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.ml-sheet__footer {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ml-border);
+}
+
+.ml-sheet__footer .ml-row > .ml-btn {
+    flex: 1;
+}
+
+@media (min-width: 641px) {
+    .ml-backdrop {
+        align-items: center;
+    }
+
+    .ml-sheet {
+        width: min(560px, calc(100vw - 48px));
+        height: auto;
+        max-height: 85vh;
+        border-radius: 12px;
+        box-shadow: 0 20px 32px rgba(0, 0, 0, 0.24);
+    }
+
+    .ml-sheet__header {
+        padding-top: 4px;
+    }
+}
+
+/* Fields */
+
+.ml-fields {
+    display: flex;
+    flex-direction: column;
+}
+
+.ml-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--ml-border);
+}
+
+.ml-fields .ml-field:last-child {
+    border-bottom: 0;
+}
+
+.ml-field__label {
+    color: var(--ml-muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.ml-picker-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+    min-height: var(--ml-tap);
+    padding: 0 12px;
+    border: 1px solid var(--ml-border);
+    border-radius: 6px;
+    background: transparent;
+}
+
+.ml-options {
+    display: flex;
+    flex-direction: column;
+}
+
+.ml-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    min-height: 52px;
+    padding: 0 8px;
+    border: 0;
+    border-bottom: 1px solid var(--ml-border);
+    background: transparent;
+    text-align: left;
+}
+
+.ml-option--selected {
+    font-weight: 600;
+}
+
+.ml-toggle-chip {
+    min-height: 36px;
+    padding: 0 4px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: transparent;
+    opacity: 0.56;
+}
+
+.ml-toggle-chip--on {
+    border-color: var(--ml-accent);
+    opacity: 1;
+}
+
+.ml-removable {
+    display: inline-flex;
+    align-items: center;
+}
+
+.ml-switch {
+    position: relative;
+    display: inline-flex;
+    width: 52px;
+    height: 32px;
+}
+
+.ml-switch input {
+    position: absolute;
+    opacity: 0;
+    inset: 0;
+    margin: 0;
+    cursor: pointer;
+}
+
+.ml-switch__track {
+    width: 100%;
+    border-radius: 16px;
+    background: var(--ml-border);
+    transition: background 0.15s;
+    pointer-events: none;
+}
+
+.ml-switch__track::after {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+    content: '';
+    transition: transform 0.15s;
+}
+
+.ml-switch input:checked + .ml-switch__track {
+    background: var(--ml-accent);
+}
+
+.ml-switch input:checked + .ml-switch__track::after {
+    transform: translateX(20px);
+}
+
+.ml-switch input:focus-visible + .ml-switch__track {
+    outline: 2px solid var(--ml-accent);
+    outline-offset: 2px;
+}
+
+/* List settings */
+
+.ml-section-title {
+    margin: 12px 0 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.ml-columns {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ml-column-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border: 1px solid var(--ml-border);
+    border-radius: 8px;
+}
+
+.ml-column-type {
+    padding-left: 4px;
+    font-size: 12px;
+}
+
+.ml-column-editor > .ml-btn {
+    align-self: flex-start;
+}
+
+.ml-choices {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ml-color-btn {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--ml-tap);
+    height: var(--ml-tap);
+    border: 0;
+    background: transparent;
+}
+
+.ml-color-btn .ml-chip {
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border-radius: 50%;
+}
+
+.ml-add-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 8px;
+    border: 1px dashed var(--ml-border);
+    border-radius: 8px;
+}
+
+.ml-add-column select {
+    flex: 1;
+}
+
+/* Mentions */
+
+.ml-mention {
+    color: var(--link-color);
+    font-weight: 600;
+}
+
+.ml-mention-field {
+    position: relative;
+    min-width: 0;
+}
+
+.ml-quick-add .ml-mention-field {
+    flex: 1;
+}
+
+/* Suggestions for a mention being typed, under the field or, when the keyboard leaves
+   no room there, above it. */
+.ml-mention-list {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 4px);
+    right: 0;
+    left: 0;
+    max-height: 240px;
+    padding: 4px;
+    overflow-y: auto;
+    border: 1px solid var(--ml-border);
+    border-radius: 8px;
+    background: var(--ml-bg);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+}
+
+.ml-mention-list--above {
+    top: auto;
+    bottom: calc(100% + 4px);
+}
+
+.ml-mention-list .ml-option {
+    width: 100%;
+    min-height: var(--ml-tap);
+    font-weight: 400;
+    text-align: left;
+}
+
+.ml-mention-list .ml-option--selected {
+    background: var(--ml-hover);
+}
+
+/* Photos */
+
+.ml-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+}
+
+.ml-photo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+    width: 100%;
+}
+
+.ml-root .ml-photo-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    aspect-ratio: 1;
+    min-height: var(--ml-tap);
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid var(--ml-border);
+    border-radius: 8px;
+    background: var(--ml-hover);
+    color: var(--ml-muted);
+    font-size: 12px;
+    text-align: center;
+}
+
+.ml-photo-tile img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ml-root .ml-photo-tile--add {
+    border-style: dashed;
+    background: transparent;
+    color: var(--ml-accent);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ml-photo-tile__plus {
+    font-size: 24px;
+    line-height: 24px;
+}
+
+.ml-photo-tile--uploading {
+    animation: ml-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes ml-pulse {
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.ml-card-photo {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--ml-hover);
+}
+
+.ml-card-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* A badge drawn over a photo, so it uses fixed colours rather than the theme's. */
+.ml-card-photo__more {
+    position: absolute;
+    right: 2px;
+    bottom: 2px;
+    padding: 0 4px;
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 16px;
+}
+
+.ml-photo-view {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    touch-action: pan-y;
+}
+
+/* Leaves room for the sheet's header, the arrows and the footer, so all stay in view. */
+.ml-photo-view img {
+    display: block;
+    max-width: 100%;
+    max-height: max(200px, min(70vh, calc(100vh - 360px)));
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+.ml-photo-nav {
+    justify-content: space-between;
+}
+
+/* Templates */
+
+.ml-templates {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.ml-templates__saved {
+    margin-top: 8px;
+}
+
+.ml-template {
+    display: flex;
+    align-items: stretch;
+    border: 1px solid var(--ml-border);
+    border-radius: 8px;
+    background: var(--ml-bg);
+}
+
+.ml-template--selected {
+    border-color: var(--ml-accent);
+    box-shadow: inset 0 0 0 1px var(--ml-accent);
+}
+
+.ml-root .ml-template__pick {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    min-height: var(--ml-tap);
+    padding: 10px 12px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+}
+
+.ml-template__name {
+    display: flex;
+    gap: 6px;
+    font-weight: 600;
+}
+
+.ml-template__check {
+    color: var(--ml-accent);
+}
+
+.ml-template__desc {
+    color: var(--ml-fg);
+    font-size: 13px;
+}
+
+.ml-template__cols {
+    max-width: 100%;
+    overflow: hidden;
+    color: var(--ml-muted);
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ml-root .ml-template__edit {
+    align-self: center;
+    margin-right: 6px;
+}
+
+.ml-new-list__actions {
+    position: sticky;
+    bottom: 0;
+    padding: 8px 0;
+    background: var(--ml-bg);
+}
+
+.ml-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.ml-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: var(--ml-tap);
+    cursor: pointer;
+}
+
+.ml-check input {
+    width: 20px;
+    height: 20px;
+    margin: 2px 0 0;
+    flex: none;
+}
+
+.ml-check__note {
+    display: block;
+    margin-top: 2px;
+    color: var(--ml-muted);
+    font-size: 12px;
+}
