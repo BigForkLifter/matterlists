@@ -52,4 +52,14 @@ go test ./server -run TestListLifecycle
 
 ## Not built yet
 
-Due-date reminders, drag and drop, CSV import/export, list templates, a full-page view, and limits on items per list.
+Due-date reminders, drag and drop, CSV import/export, and limits on items per list.
+
+## Support
+
+Built for and used on my own Mattermost server. Issues and pull requests are welcome, but there are no promises about fixes, features or response times.
+
+## License
+
+Apache License 2.0; see [LICENSE](LICENSE).
+
+Mattermost is a trademark of Mattermost, Inc. This project is not affiliated with or endorsed by Mattermost, Inc.
