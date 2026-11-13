@@ -450,11 +450,15 @@ type CardProps = {
     // handle makes the card draggable; overlay is the copy that follows the pointer.
     handle?: DragHandle;
     overlay?: boolean;
+
+    // onBoard hides the status chip: the column header already says it, and a card moves
+    // to another column by dragging it.
+    onBoard?: boolean;
 };
 
 const DONE_NAMES = /^(done|complete|completed|closed|finished)$/i;
 
-function Card({detail, item, statusColumn, onOpen, handle, overlay}: CardProps) {
+function Card({detail, item, statusColumn, onOpen, handle, overlay, onBoard}: CardProps) {
     const [pickingStatus, setPickingStatus] = useState(false);
     const status = statusColumn && choicesOf(statusColumn).find((c) => c.id === item.values[statusColumn.id]);
     const isDone = Boolean(status && DONE_NAMES.test(status.name));
@@ -485,7 +489,7 @@ function Card({detail, item, statusColumn, onOpen, handle, overlay}: CardProps) 
                 <div className='ml-card__title'>
                     <MentionText text={item.title}/>
                 </div>
-                {statusColumn && (
+                {statusColumn && !onBoard && (
                     <button
                         className='ml-card__status'
                         aria-label={`${statusColumn.name}: ${status ? status.name : 'None'}`}
@@ -699,6 +703,7 @@ function Board({detail, items, groupColumn, manual, onOpen}: BoardProps) {
                                                         item={it}
                                                         statusColumn={groupColumn}
                                                         onOpen={onOpen}
+                                                        onBoard={true}
                                                         handle={handle}
                                                     />
                                                 )}
@@ -726,6 +731,7 @@ function Board({detail, items, groupColumn, manual, onOpen}: BoardProps) {
                         item={active}
                         statusColumn={groupColumn}
                         onOpen={onOpen}
+                        onBoard={true}
                         overlay={true}
                     />
                 )}
