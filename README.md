@@ -12,6 +12,7 @@ Lightweight lists for Mattermost channels, designed for phone browsers first: ta
 - **Lists belong to a channel.** Members who can read the channel see its lists; members who can post can edit them.
 - **Typed columns:** text, number, single select, multi-select, people, date, checkbox, link, and **Created by** (filled in automatically with whoever added the item; can be changed by hand or reset). Columns can be reordered in list settings. New lists start with Status, Assignee and Due.
 - **List and Board views.** The board groups items by any single-select column. On phones it scrolls one column per swipe.
+- **Drag and drop.** Drag cards to reorder them, or onto another board column to change their status. On phones, press and hold a card to pick it up. With a keyboard, Space picks a card up and drops it, and the arrow keys move it.
 - **Discussions use Mattermost threads.** "Start discussion" posts a root message in the channel, so replies, mentions and notifications work as usual.
 - **Add to list** from any message's actions menu.
 - **Links to lists** (`/<team>/com.otules.matterlists/list/<id>`) go to the list's channel and open it in the sidebar. The 🔗 button copies one or adds it to the channel's bookmarks; ⤢ in the sidebar opens the list as a full page over the channel (‹ closes it).
@@ -81,7 +82,7 @@ go test ./server -run TestListLifecycle
 
 ## Not built yet
 
-Due-date reminders, drag and drop, CSV import/export, and limits on items per list.
+Due-date reminders, CSV import/export, and limits on items per list.
 
 ## Support
 

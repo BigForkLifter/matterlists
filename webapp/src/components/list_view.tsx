@@ -1,8 +1,13 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {DndContext, closestCenter, closestCorners, pointerWithin, useDroppable} from '@dnd-kit/core';
+import type {CollisionDetection, DragEndEvent, DragOverEvent, DragStartEvent} from '@dnd-kit/core';
+import {SortableContext, verticalListSortingStrategy} from '@dnd-kit/sortable';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSelector} from 'react-redux';
 
 import type {GlobalState} from '@mattermost/types/store';
 
+import {CardOverlay, SortableCard, cardAutoScroll, justDragged, noteDragEnd, useCardSensors} from './dnd';
+import type {DragHandle} from './dnd';
 import {CellDisplay, ChoiceChip, ChoiceSheet, choicesOf} from './fields';
 import ItemSheet from './item_sheet';
 import {useListMode} from './list_mode';
@@ -11,8 +16,9 @@ import {MentionInput, MentionText} from './mentions';
 import ShareSheet from './share_sheet';
 import SortSheet from './sort_sheet';
 
-import {addItem, channelLocation, clearItemRequest, closeListPage, displayName, openList, openListPage, patchItem, showListInSidebar, useItemRequest, useList, useUsers} from '../data';
+import {addItem, channelLocation, clearItemRequest, closeListPage, displayName, moveItemTo, openList, openListPage, patchItem, showListInSidebar, useItemRequest, useList, useUsers} from '../data';
 import type {ChannelLocation} from '../data';
+import {moveId, neighbours} from '../order';
 import {MANUAL_SORT, formatSort, parseSort, sortItems, sortLabel} from '../sort';
 import type {Sort} from '../sort';
 import type {Column, Item, ListDetail} from '../types';
@@ -286,6 +292,7 @@ function ListBody({detail, initialItemId}: {detail: ListDetail; initialItemId?: 
                         detail={detail}
                         items={items}
                         groupColumn={groupColumn}
+                        manual={sort.key === 'manual'}
                         onOpen={setOpenItemId}
                     />
                 ) : (
@@ -297,6 +304,7 @@ function ListBody({detail, initialItemId}: {detail: ListDetail; initialItemId?: 
                             detail={detail}
                             items={items}
                             statusColumn={groupColumn}
+                            manual={sort.key === 'manual'}
                             onOpen={setOpenItemId}
                         />
                     </>
@@ -347,29 +355,89 @@ type CardsProps = {
     detail: ListDetail;
     items: Item[];
     statusColumn?: Column;
+
+    // Cards can be dragged into a new order only in manual order; a sort by a field
+    // decides the order itself.
+    manual: boolean;
     onOpen: (id: string) => void;
 };
 
-function Cards({detail, items, statusColumn, onOpen}: CardsProps) {
+function Cards({detail, items, statusColumn, manual, onOpen}: CardsProps) {
+    const sensors = useCardSensors();
+    const [activeId, setActiveId] = useState<string | null>(null);
+    const ids = useMemo(() => items.map((it) => it.id), [items]);
+
     if (!detail.items.length) {
         return <div className='ml-empty'>{'No items yet. Add the first one below.'}</div>;
     }
     if (!items.length) {
         return <div className='ml-empty'>{'No items match.'}</div>;
     }
+
+    const onDragEnd = ({active, over}: DragEndEvent) => {
+        setActiveId(null);
+        noteDragEnd();
+        const item = items.find((it) => it.id === active.id);
+        if (!item || !over || over.id === active.id) {
+            return;
+        }
+        const order = moveId(ids, ids.indexOf(item.id), ids.indexOf(String(over.id)));
+        const {prevId, nextId} = neighbours(order, item.id);
+        moveItemTo(detail, item, prevId, nextId);
+    };
+    const active = activeId ? items.find((it) => it.id === activeId) : undefined;
+
     return (
-        <ul className='ml-cards'>
-            {items.map((it) => (
-                <li key={it.id}>
+        <DndContext
+            sensors={sensors}
+            autoScroll={cardAutoScroll}
+            collisionDetection={closestCenter}
+            onDragStart={({active: a}) => setActiveId(String(a.id))}
+            onDragEnd={onDragEnd}
+            onDragCancel={() => {
+                setActiveId(null);
+                noteDragEnd();
+            }}
+        >
+            <SortableContext
+                items={ids}
+                strategy={verticalListSortingStrategy}
+                disabled={!manual}
+            >
+                <ul className='ml-cards'>
+                    {items.map((it) => (
+                        <SortableCard
+                            key={it.id}
+                            id={it.id}
+                            disabled={!manual}
+                        >
+                            {(handle) => (
+                                <li>
+                                    <Card
+                                        detail={detail}
+                                        item={it}
+                                        statusColumn={statusColumn}
+                                        onOpen={onOpen}
+                                        handle={manual ? handle : undefined}
+                                    />
+                                </li>
+                            )}
+                        </SortableCard>
+                    ))}
+                </ul>
+            </SortableContext>
+            <CardOverlay>
+                {active && (
                     <Card
                         detail={detail}
-                        item={it}
+                        item={active}
                         statusColumn={statusColumn}
                         onOpen={onOpen}
+                        overlay={true}
                     />
-                </li>
-            ))}
-        </ul>
+                )}
+            </CardOverlay>
+        </DndContext>
     );
 }
 
@@ -378,22 +446,40 @@ type CardProps = {
     item: Item;
     statusColumn?: Column;
     onOpen: (id: string) => void;
+
+    // handle makes the card draggable; overlay is the copy that follows the pointer.
+    handle?: DragHandle;
+    overlay?: boolean;
 };
 
 const DONE_NAMES = /^(done|complete|completed|closed|finished)$/i;
 
-function Card({detail, item, statusColumn, onOpen}: CardProps) {
+function Card({detail, item, statusColumn, onOpen, handle, overlay}: CardProps) {
     const [pickingStatus, setPickingStatus] = useState(false);
     const status = statusColumn && choicesOf(statusColumn).find((c) => c.id === item.values[statusColumn.id]);
     const isDone = Boolean(status && DONE_NAMES.test(status.name));
 
     return (
         <div
-            className={`ml-card${isDone ? ' ml-card--done' : ''}`}
+            ref={handle?.setNodeRef}
+            style={handle?.style}
+            {...handle?.attributes}
+            {...handle?.listeners}
+            className={'ml-card' +
+                (isDone ? ' ml-card--done' : '') +
+                (handle ? ' ml-card--draggable' : '') +
+                (handle?.isDragging ? ' ml-card--placeholder' : '') +
+                (overlay ? ' ml-card--overlay' : '')}
             role='button'
-            tabIndex={0}
-            onClick={() => onOpen(item.id)}
-            onKeyDown={(e) => e.key === 'Enter' && onOpen(item.id)}
+            tabIndex={overlay ? -1 : 0}
+            onClick={() => !justDragged() && onOpen(item.id)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                    onOpen(item.id);
+                    return;
+                }
+                handle?.listeners?.onKeyDown?.(e);
+            }}
         >
             <div className='ml-card__top'>
                 <div className='ml-card__title'>
@@ -446,52 +532,224 @@ type BoardProps = {
     detail: ListDetail;
     items: Item[];
     groupColumn: Column;
+
+    // In manual order a drop also places the card among the column's cards; under a sort
+    // by a field it only changes the card's group.
+    manual: boolean;
     onOpen: (id: string) => void;
 };
 
+// Board containers are keyed by group so an empty column can still take a drop; "" is
+// "No <column>".
+const groupKey = (choiceId: string) => `group:${choiceId}`;
+const choiceOfKey = (key: string) => key.slice('group:'.length);
+
+// boardCollisions picks what a dragged card is over: a card under the pointer, else the
+// column under the pointer (so an empty column takes a drop), else, for keyboard drags,
+// the nearest by corners. Corners alone lose an empty column to the cards beside it.
+const boardCollisions: CollisionDetection = (args) => {
+    const hits = pointerWithin(args);
+    if (hits.length) {
+        const cards = hits.filter((c) => !String(c.id).startsWith('group:'));
+        return cards.length ? cards : hits;
+    }
+    return closestCorners(args);
+};
+
 // Board shows one column per choice, plus "None". On phones the columns scroll sideways
-// one at a time; items move between them with the status button on each card.
-function Board({detail, items, groupColumn, onOpen}: BoardProps) {
+// one at a time. Cards move between them by dragging, or with the status button on each
+// card.
+function Board({detail, items, groupColumn, manual, onOpen}: BoardProps) {
+    const sensors = useCardSensors();
     const groups = [...choicesOf(groupColumn).map((c) => ({id: c.id, choice: c})), {id: '', choice: undefined}];
+    const valueOf = (it: Item) => (it.values[groupColumn.id] as string | undefined) || '';
+
+    const shown = useMemo(() => {
+        const byGroup: Record<string, string[]> = {};
+        for (const g of choicesOf(groupColumn)) {
+            byGroup[groupKey(g.id)] = [];
+        }
+        byGroup[groupKey('')] = [];
+        for (const it of items) {
+            const key = groupKey((it.values[groupColumn.id] as string | undefined) || '');
+            (byGroup[key] ??= []).push(it.id);
+        }
+        return byGroup;
+    }, [items, groupColumn]);
+
+    // While dragging, the card is shown where it would land, which may be another column.
+    // leftMargin holds the centred full-page board still while "No <column>" is added.
+    const [drag, setDrag] = useState<{activeId: string; containers: Record<string, string[]>; leftMargin: number} | null>(null);
+    const boardRef = useRef<HTMLDivElement>(null);
+    const containers = drag?.containers ?? shown;
+    const containerOf = (id: string) => (id in containers ? id : Object.keys(containers).find((k) => containers[k].includes(id)));
+
+    const onDragStart = ({active}: DragStartEvent) => {
+        const first = boardRef.current?.firstElementChild;
+        const leftMargin = first ? parseFloat(window.getComputedStyle(first).marginLeft) || 0 : 0;
+        setDrag({activeId: String(active.id), containers: shown, leftMargin});
+    };
+
+    const onDragOver = ({active, over}: DragOverEvent) => {
+        if (!drag || !over) {
+            return;
+        }
+        const from = containerOf(String(active.id));
+        const to = containerOf(String(over.id));
+        if (!from || !to || from === to) {
+            return;
+        }
+        const target = containers[to];
+        const overIndex = target.indexOf(String(over.id));
+        const at = overIndex < 0 ? target.length : overIndex;
+        setDrag({
+            ...drag,
+            containers: {
+                ...containers,
+                [from]: containers[from].filter((id) => id !== active.id),
+                [to]: [...target.slice(0, at), String(active.id), ...target.slice(at)],
+            },
+        });
+    };
+
+    const onDragEnd = ({active, over}: DragEndEvent) => {
+        const current = containers;
+        setDrag(null);
+        noteDragEnd();
+        const item = items.find((it) => it.id === active.id);
+        const to = containerOf(String(active.id));
+        if (!item || !over || !to) {
+            return;
+        }
+        let ids = current[to];
+        const overIndex = ids.indexOf(String(over.id));
+        if (overIndex >= 0 && over.id !== active.id) {
+            ids = moveId(ids, ids.indexOf(item.id), overIndex);
+        }
+        const choiceId = choiceOfKey(to);
+        const values = choiceId === valueOf(item) ? undefined : {[groupColumn.id]: choiceId || null};
+        if (!manual) {
+            if (values) {
+                patchItem(item, {values});
+            }
+            return;
+        }
+        const {prevId, nextId} = neighbours(ids, item.id);
+        const before = neighbours(shown[groupKey(valueOf(item))] || [], item.id);
+        if (!values && before.prevId === prevId && before.nextId === nextId) {
+            return;
+        }
+        moveItemTo(detail, item, prevId, nextId, values);
+    };
+
+    const active = drag ? items.find((it) => it.id === drag.activeId) : undefined;
     return (
-        <div className='ml-board'>
-            {groups.map(({id, choice}) => {
-                const groupItems = items.filter((it) => ((it.values[groupColumn.id] as string | undefined) || '') === id);
-                if (!choice && !groupItems.length) {
-                    return null;
-                }
-                return (
-                    <section
-                        key={id || 'none'}
-                        className='ml-board__col'
-                    >
-                        <header className='ml-board__col-header'>
-                            {choice ? <ChoiceChip choice={choice}/> : <span className='ml-muted'>{'No '}{groupColumn.name}</span>}
-                            <span className='ml-muted'>{groupItems.length}</span>
-                        </header>
-                        <div className='ml-board__items'>
-                            {groupItems.map((it) => (
-                                <Card
-                                    key={it.id}
-                                    detail={detail}
-                                    item={it}
-                                    statusColumn={groupColumn}
-                                    onOpen={onOpen}
+        <DndContext
+            sensors={sensors}
+            autoScroll={cardAutoScroll}
+            collisionDetection={boardCollisions}
+            onDragStart={onDragStart}
+            onDragOver={onDragOver}
+            onDragEnd={onDragEnd}
+            onDragCancel={() => {
+                setDrag(null);
+                noteDragEnd();
+            }}
+        >
+            <div
+                ref={boardRef}
+                className={drag ? 'ml-board ml-board--dragging' : 'ml-board'}
+            >
+                {groups.map(({id, choice}, index) => {
+                    const key = groupKey(id);
+                    const groupIds = containers[key] || [];
+
+                    // "No <column>" appears when it has cards, and during a drag as a place to
+                    // clear the value.
+                    if (!choice && !groupIds.length && !drag) {
+                        return null;
+                    }
+                    return (
+                        <BoardColumn
+                            key={key}
+                            id={key}
+                            style={drag && index === 0 ? {marginLeft: drag.leftMargin} : undefined}
+                            header={choice ? <ChoiceChip choice={choice}/> : <span className='ml-muted'>{'No '}{groupColumn.name}</span>}
+                            count={groupIds.length}
+                        >
+                            <SortableContext
+                                id={key}
+                                items={groupIds}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <div className='ml-board__items'>
+                                    {groupIds.map((itemId) => {
+                                        const it = items.find((i) => i.id === itemId);
+                                        if (!it) {
+                                            return null;
+                                        }
+                                        return (
+                                            <SortableCard
+                                                key={it.id}
+                                                id={it.id}
+                                            >
+                                                {(handle) => (
+                                                    <Card
+                                                        detail={detail}
+                                                        item={it}
+                                                        statusColumn={groupColumn}
+                                                        onOpen={onOpen}
+                                                        handle={handle}
+                                                    />
+                                                )}
+                                            </SortableCard>
+                                        );
+                                    })}
+                                </div>
+                            </SortableContext>
+                            {choice && (
+                                <QuickAdd
+                                    listId={detail.list.id}
+                                    channelId={detail.list.channel_id}
+                                    defaults={{[groupColumn.id]: choice.id}}
+                                    compact={true}
                                 />
-                            ))}
-                        </div>
-                        {choice && (
-                            <QuickAdd
-                                listId={detail.list.id}
-                                channelId={detail.list.channel_id}
-                                defaults={{[groupColumn.id]: choice.id}}
-                                compact={true}
-                            />
-                        )}
-                    </section>
-                );
-            })}
-        </div>
+                            )}
+                        </BoardColumn>
+                    );
+                })}
+            </div>
+            <CardOverlay>
+                {active && (
+                    <Card
+                        detail={detail}
+                        item={active}
+                        statusColumn={groupColumn}
+                        onOpen={onOpen}
+                        overlay={true}
+                    />
+                )}
+            </CardOverlay>
+        </DndContext>
+    );
+}
+
+// BoardColumn is a drop target, so a card can be dropped into an empty column or below
+// the last card.
+function BoardColumn({id, style, header, count, children}: {id: string; style?: React.CSSProperties; header: React.ReactNode; count: number; children: React.ReactNode}) {
+    const {setNodeRef, isOver} = useDroppable({id});
+    return (
+        <section
+            ref={setNodeRef}
+            style={style}
+            className={isOver ? 'ml-board__col ml-board__col--over' : 'ml-board__col'}
+        >
+            <header className='ml-board__col-header'>
+                {header}
+                <span className='ml-muted'>{count}</span>
+            </header>
+            {children}
+        </section>
     );
 }
 

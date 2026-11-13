@@ -72,7 +72,7 @@ export default function SortSheet({sort, columns, onChange, onClose}: Props) {
                 ))}
             </div>
             <div className='ml-options'>
-                {option('manual', 'Manual order', 'use Move up/down on an item')}
+                {option('manual', 'Manual order', 'drag cards, or use Move up/down on an item')}
                 {BUILT_IN.map((b) => option(b.key, b.name))}
                 {columns.filter((c) => c.type !== 'photos').map((c) => option(c.id, c.name, COLUMN_TYPE_LABELS[c.type]))}
             </div>

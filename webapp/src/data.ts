@@ -5,6 +5,7 @@ import type {Store} from 'redux';
 import type {GlobalState} from '@mattermost/types/store';
 
 import {ApiError, Client, getSiteURL} from './client';
+import {orderBetween, renumber} from './order';
 import type {CellValue, Column, Item, List, ListDetail, Template, UserLite} from './types';
 
 // A small cache shared by every MatterLists component. Changes are applied optimistically
@@ -483,7 +484,7 @@ export function moveColumn(detail: ListDetail, column: Column, direction: -1 | 1
     mutate(detail.list.id, optimistic, () => Client.patchColumn(column.id, {sort_order: order}));
 }
 
-// moveItem moves an item one place up or down by giving it a sort order between its new neighbours.
+// moveItem moves an item one place up or down.
 export function moveItem(detail: ListDetail, item: Item, direction: -1 | 1) {
     const items = detail.items;
     const index = items.findIndex((it) => it.id === item.id);
@@ -491,10 +492,43 @@ export function moveItem(detail: ListDetail, item: Item, direction: -1 | 1) {
     if (index < 0 || target < 0 || target >= items.length) {
         return;
     }
-    const neighbour = items[target];
-    const beyond = items[target + direction];
-    const order = beyond ? (neighbour.sort_order + beyond.sort_order) / 2 : neighbour.sort_order + direction;
-    patchItem(item, {sort_order: order});
+    const others = items.filter((it) => it.id !== item.id);
+    moveItemTo(detail, item, others[target - 1]?.id, others[target]?.id);
+}
+
+// moveItemTo places an item between two others, either of which may be missing (the
+// start or end), and can change cell values in the same request, as a drop on another
+// board column does. Neighbours are looked up in the whole list, so they can be the
+// neighbours shown in a filtered view.
+export async function moveItemTo(detail: ListDetail, item: Item, prevId?: string, nextId?: string, values?: Record<string, CellValue | null>) {
+    const byId = new Map(detail.items.map((it) => [it.id, it]));
+    const order = orderBetween(prevId ? byId.get(prevId)?.sort_order : undefined, nextId ? byId.get(nextId)?.sort_order : undefined);
+    if (order !== null) {
+        await patchItem(item, values ? {sort_order: order, values} : {sort_order: order});
+        return;
+    }
+
+    // No room left between the neighbours: renumber the whole list with the item in place.
+    const ids = detail.items.map((it) => it.id).filter((id) => id !== item.id);
+    let at = nextId ? ids.indexOf(nextId) : -1;
+    if (at < 0) {
+        at = prevId ? ids.indexOf(prevId) + 1 : ids.length;
+    }
+    ids.splice(at, 0, item.id);
+    const orders = renumber(ids);
+    const listId = detail.list.id;
+    const renumbered = (d: ListDetail): ListDetail => {
+        const items = d.items.map((it) => {
+            const moved = it.id === item.id && values ? applyItemPatch(it, {values}) : it;
+            return orders[it.id] === undefined ? moved : {...moved, sort_order: orders[it.id]};
+        });
+        return {...d, items: sortItems(items)};
+    };
+    await mutate(
+        listId,
+        renumbered,
+        () => Promise.all(ids.map((id) => Client.patchItem(id, id === item.id && values ? {sort_order: orders[id], values} : {sort_order: orders[id]}))),
+    );
 }
 
 function applyItemPatch(item: Item, patch: {title?: string; values?: Record<string, CellValue | null>; sort_order?: number}): Item {

@@ -645,6 +645,35 @@
     overflow-y: auto;
 }
 
+/* Drag and drop. A long press picks a card up on phones, so the press mustn't select text
+   or open the browser's callout menu. */
+
+.ml-card--draggable {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.ml-card--placeholder {
+    opacity: 0.4;
+}
+
+.ml-card--overlay {
+    cursor: grabbing;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+    transform: rotate(1.5deg);
+}
+
+/* Scroll snapping fights the auto-scroll that follows a card dragged to the edge. */
+.ml-board--dragging {
+    scroll-snap-type: none;
+}
+
+.ml-board__col--over {
+    box-shadow: inset 0 0 0 2px var(--ml-accent);
+}
+
 /* Quick add */
 
 .ml-quick-add {
