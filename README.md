@@ -1,6 +1,11 @@
 # MatterLists
 
-Lightweight lists for Mattermost channels, designed for phone browsers first.
+Lightweight lists for Mattermost channels, designed for phone browsers first: tasks, checklists, issue trackers and inspection logs that live in the channel where the work is discussed.
+
+**Why not Boards or Playbooks?** Those are bigger tools with their own spaces and workflows. MatterLists is for the small, shared list a channel keeps: it uses the channel's permissions, discussions are ordinary channel threads, and every screen is built to work in a phone browser.
+
+**Install:** download the `.tar.gz` from the [latest release](https://github.com/BigForkLifter/matterlists/releases/latest) and upload it in **System Console → Plugins → Plugin Management**. Requires Mattermost 10.0+ on PostgreSQL.
+
 
 - **Lists belong to a channel.** Members who can read the channel see its lists; members who can post can edit them.
 - **Typed columns:** text, number, single select, multi-select, people, date, checkbox, link, and **Created by** (filled in automatically with whoever added the item; can be changed by hand or reset). Columns can be reordered in list settings. New lists start with Status, Assignee and Due.
@@ -25,6 +30,18 @@ Lightweight lists for Mattermost channels, designed for phone browsers first.
 - PostgreSQL. The plugin refuses to activate on MySQL.
 
 The plugin stores data in its own tables (`ml_lists`, `ml_columns`, `ml_items`), which it creates and migrates on activation.
+
+## For administrators
+
+- **Permissions.** A list follows its channel: anyone who can read the channel can read its lists, anyone who can post can edit them. There are no separate list permissions. Someone without access gets a 404, so a list's existence isn't revealed.
+- **Removing someone from a channel or deactivating them** removes their access to its lists right away. Their name stays where they were assigned or listed as creator.
+- **Archived channels.** Lists become read-only while the channel is archived.
+- **Deleting a list** is a soft delete: its rows stay in the database.
+- **Where data lives.** Everything, photos included, is in the Mattermost database, in tables prefixed `ml_`. Your normal database backup covers it; nothing goes to the file store.
+- **Upgrades.** Schema migrations run when the plugin activates, under a Postgres advisory lock so cluster nodes don't race, and are recorded in `ml_migrations`.
+- **Uninstalling** leaves the `ml_` tables in place, so reinstalling brings the lists back. Drop the tables yourself to remove the data.
+- **Photo uploads** are re-encoded as JPEG (removing EXIF and GPS data) and capped at 25 MB or the server's maximum file size, whichever is smaller.
+- **Notifications.** A bot account, `matterlists`, DMs people when someone else assigns them or @mentions them in an item.
 
 ## Development
 
