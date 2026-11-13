@@ -2,6 +2,8 @@
 
 Lightweight lists for Mattermost channels, designed for phone browsers first: tasks, checklists, issue trackers and inspection logs that live in the channel where the work is discussed.
 
+![A list shown as a board, opened full page over its channel](docs/images/board-desktop.png)
+
 **Why not Boards or Playbooks?** Those are bigger tools with their own spaces and workflows. MatterLists is for the small, shared list a channel keeps: it uses the channel's permissions, discussions are ordinary channel threads, and every screen is built to work in a phone browser.
 
 **Install:** download the `.tar.gz` from the [latest release](https://github.com/BigForkLifter/matterlists/releases/latest) and upload it in **System Console → Plugins → Plugin Management**. Requires Mattermost 10.0+ on PostgreSQL.
@@ -15,6 +17,16 @@ Lightweight lists for Mattermost channels, designed for phone browsers first: ta
 - **Links to lists** (`/<team>/com.otules.matterlists/list/<id>`) go to the list's channel and open it in the sidebar. The 🔗 button copies one or adds it to the channel's bookmarks; ⤢ in the sidebar opens the list as a full page over the channel (‹ closes it).
 - **Live updates** over WebSocket.
 - **`/list` slash command** (`ls`, `show`, `new`, `add`) for the native mobile app, which can't load plugin UI.
+
+## Screenshots
+
+On a phone: list, board, and editing an item.
+
+![MatterLists in a phone browser: list view, board view and the item editor](docs/images/phone.png)
+
+In the sidebar next to the channel:
+
+![A list in the right-hand sidebar beside the channel's messages](docs/images/list-sidebar-desktop.png)
 
 ## Where to find it
 
