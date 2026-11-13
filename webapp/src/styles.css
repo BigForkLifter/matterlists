@@ -146,8 +146,28 @@
     resize: none;
 }
 
-.ml-input--search {
+/* Our own clear button, since only some browsers draw one for type=search. */
+.ml-search {
+    position: relative;
     flex: 1 1 120px;
+    min-width: 0;
+}
+
+.ml-input--search {
+    padding-right: var(--ml-tap);
+}
+
+.ml-input--search::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.ml-search__clear {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    transform: translateY(-50%);
+    font-size: 14px;
 }
 
 .ml-row {

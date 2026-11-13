@@ -136,6 +136,7 @@ function ListBody({detail, initialItemId}: {detail: ListDetail; initialItemId?: 
     const users = useUsers();
 
     const [search, setSearch] = useState('');
+    const searchRef = useRef<HTMLInputElement>(null);
     const [mineOnly, setMineOnly] = useState(false);
     const [createdByMe, setCreatedByMe] = useState(false);
     const [openItemId, setOpenItemId] = useState<string | null>(initialItemId || null);
@@ -255,13 +256,28 @@ function ListBody({detail, initialItemId}: {detail: ListDetail; initialItemId?: 
                 >
                     {sort.key === 'manual' ? '⇅ Sort' : `${sort.dir === 'asc' ? '↑' : '↓'} ${sortName}`}
                 </button>
-                <input
-                    className='ml-input ml-input--search'
-                    type='search'
-                    placeholder='Search'
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                />
+                <div className='ml-search'>
+                    <input
+                        ref={searchRef}
+                        className='ml-input ml-input--search'
+                        type='search'
+                        placeholder='Search'
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
+                    {search && (
+                        <button
+                            className='ml-icon-btn ml-search__clear'
+                            aria-label='Clear search'
+                            onClick={() => {
+                                setSearch('');
+                                searchRef.current?.focus();
+                            }}
+                        >
+                            {'✕'}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {view === 'board' && selectColumns.length > 1 && groupColumn && (
