@@ -21,7 +21,11 @@ Lightweight lists for Mattermost channels, designed for phone browsers first: ta
 
 ## Screenshots
 
-On a phone: list, board, and editing an item.
+On a phone: press and hold a card to drag it up the list, then across to another board column.
+
+<img src="docs/images/drag-phone.gif" width="300" alt="On a phone, a card is long-pressed and dragged to the top of the list, then on the board a card is dragged from To do into In progress">
+
+List, board, and editing an item:
 
 ![MatterLists in a phone browser: list view, board view and the item editor](docs/images/phone.png)
 
